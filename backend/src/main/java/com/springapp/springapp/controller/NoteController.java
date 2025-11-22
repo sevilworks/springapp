@@ -19,29 +19,30 @@ public class NoteController {
     private NoteService noteService;
 
     @GetMapping
-    public ResponseEntity<List<Note>> getAllNotes() {
-        List<Note> notes = noteService.getAllNotes();
-        return ResponseEntity.ok(notes);
+    public List<Note> getAllNotes() {
+        return noteService.getAllNotes();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Note> getNoteById(@PathVariable Long id) {
         Optional<Note> note = noteService.getNoteById(id);
-        return note.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+        if (note.isPresent()) {
+            return ResponseEntity.ok(note.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
     public ResponseEntity<Note> createNote(@RequestBody Note note) {
-        Note createdNote = noteService.createNote(note);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdNote);
+        Note created = noteService.createNote(note);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Note> updateNote(@PathVariable Long id, @RequestBody Note note) {
-        Note updatedNote = noteService.updateNote(id, note);
-        if (updatedNote != null) {
-            return ResponseEntity.ok(updatedNote);
+        Note updated = noteService.updateNote(id, note);
+        if (updated != null) {
+            return ResponseEntity.ok(updated);
         }
         return ResponseEntity.notFound().build();
     }
@@ -61,5 +62,3 @@ public class NoteController {
         return ResponseEntity.noContent().build();
     }
 }
-
-

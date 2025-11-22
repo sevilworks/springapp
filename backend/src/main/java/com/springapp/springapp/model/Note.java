@@ -23,7 +23,7 @@ public class Note {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
 
     @Column(name = "modified_date")
@@ -43,5 +43,3 @@ public class Note {
         modifiedDate = LocalDateTime.now();
     }
 }
-
-

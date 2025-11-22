@@ -26,41 +26,28 @@ public class NoteService {
     }
 
     public Note createNote(Note note) {
-        // Check grammar and set score
-        if (note.getContent() != null && !note.getContent().trim().isEmpty()) {
-            Double grammarScore = grammarService.checkGrammar(note.getContent());
-            note.setGrammarScore(grammarScore);
-        }
+        updateGrammarScore(note);
         return noteRepository.save(note);
     }
 
     public Note updateNote(Long id, Note noteDetails) {
-        Optional<Note> optionalNote = noteRepository.findById(id);
-        if (optionalNote.isPresent()) {
-            Note note = optionalNote.get();
+        Optional<Note> opt = noteRepository.findById(id);
+        if (opt.isPresent()) {
+            Note note = opt.get();
             note.setTitle(noteDetails.getTitle());
             note.setContent(noteDetails.getContent());
-            
-            // Re-check grammar when content is updated
-            if (note.getContent() != null && !note.getContent().trim().isEmpty()) {
-                Double grammarScore = grammarService.checkGrammar(note.getContent());
-                note.setGrammarScore(grammarScore);
-            }
-            
+            updateGrammarScore(note);
             return noteRepository.save(note);
         }
         return null;
     }
 
     public Note checkGrammar(Long id) {
-        Optional<Note> optionalNote = noteRepository.findById(id);
-        if (optionalNote.isPresent()) {
-            Note note = optionalNote.get();
-            if (note.getContent() != null && !note.getContent().trim().isEmpty()) {
-                Double grammarScore = grammarService.checkGrammar(note.getContent());
-                note.setGrammarScore(grammarScore);
-                return noteRepository.save(note);
-            }
+        Optional<Note> opt = noteRepository.findById(id);
+        if (opt.isPresent()) {
+            Note note = opt.get();
+            updateGrammarScore(note);
+            return noteRepository.save(note);
         }
         return null;
     }
@@ -68,6 +55,11 @@ public class NoteService {
     public void deleteNote(Long id) {
         noteRepository.deleteById(id);
     }
+
+    private void updateGrammarScore(Note note) {
+        if (note.getContent() != null && !note.getContent().isEmpty()) {
+            Double score = grammarService.checkGrammar(note.getContent());
+            note.setGrammarScore(score);
+        }
+    }
 }
-
-

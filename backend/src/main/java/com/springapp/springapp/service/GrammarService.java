@@ -15,58 +15,49 @@ import java.util.Map;
 @Service
 public class GrammarService {
 
-    private final RestTemplate restTemplate;
-    private static final String GRAMMAR_API_URL = "https://api.languagetool.org/v2/check";
+    private RestTemplate restTemplate;
+    private String apiUrl = "https://api.languagetool.org/v2/check";
 
     public GrammarService() {
-        this.restTemplate = new RestTemplate();
+        restTemplate = new RestTemplate();
     }
 
     public Double checkGrammar(String text) {
         try {
-            if (text == null || text.trim().isEmpty()) {
+            if (text == null || text.isEmpty()) {
                 return 100.0;
             }
 
-            // Prepare form data for POST request
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-            map.add("text", text);
-            map.add("language", "en-US");
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("text", text);
+            params.add("language", "en-US");
             
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-            // Make POST request to LanguageTool API
-            @SuppressWarnings("unchecked")
-            ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(
-                GRAMMAR_API_URL, 
-                request, 
-                (Class<Map<String, Object>>) (Class<?>) Map.class
-            );
-            Map<String, Object> responseBody = response.getBody();
+            ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, request, Map.class);
+            Map<String, Object> result = response.getBody();
 
-            if (responseBody != null && responseBody.containsKey("matches")) {
-                List<Map<String, Object>> matches = (List<Map<String, Object>>) responseBody.get("matches");
-                int errorCount = matches.size();
-                
-                // Calculate score based on error count and text length
-                int wordCount = text.trim().split("\\s+").length;
-                if (wordCount == 0) return 100.0;
-                
-                // Score calculation: fewer errors relative to word count = higher score
-                double errorRate = (double) errorCount / wordCount;
-                double score = Math.max(0, 100 - (errorRate * 50)); // Penalize errors
-                return Math.round(score * 10.0) / 10.0; // Round to 1 decimal place
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) result.get("matches");
+            int errors = matches.size();
+            
+            String[] words = text.trim().split("\\s+");
+            int wordCount = words.length;
+            if (wordCount == 0) {
+                return 0.00;
             }
             
-            return 100.0; // No errors found
+            double errorRate = (double) errors / wordCount;
+            double score = 100 - (errorRate * 50);
+            if (score < 0) score = 0;
+            
+            return Math.round(score * 10.0) / 10.0;
+            
         } catch (Exception e) {
-            // If API fails, return a default score
-            System.err.println("Grammar check failed: " + e.getMessage());
-            return 50.0; // Return neutral score on error
+            System.err.println("Error checking grammar: " + e.getMessage());
+            return 0.00;
         }
     }
 }
-

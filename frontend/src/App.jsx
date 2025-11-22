@@ -276,7 +276,7 @@ function App() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '1400px', margin: '0 auto' }}>
             <Box>
               <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 1, color: 'white' }}>
-                📝 Notes App with Grammar Checker
+                📝 Notergram
               </Typography>
               <Typography variant="h6" sx={{ opacity: 0.9, color: 'white' }}>
                 Create, edit, and check grammar of your notes
